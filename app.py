@@ -91,9 +91,18 @@ def sanitize_filename(text):
 
 def generate_filename(row, selected_cols):
     parts = [sanitize_filename(str(row.get(col, 'NA'))) for col in selected_cols]
-    return "BP21_" + "_".join(parts) + ".pdf"
+    return prefix + "_" + "_".join(parts) + ".pdf"
 
+st.markdown("### 🔍 Panduan Penggunaan:")
+st.markdown("""
+1. Pilih satu atau lebih file PDF.  
+2. Sistem akan otomatis mengekstrak isinya.  
+3. Anda dapat memilih kolom mana saja sebagai penamaan file.  
+4. Klik tombol Rename & Download untuk mengunduh file hasil rename.
+""")
 uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"], accept_multiple_files=True)
+
+prefix = st.text_input("✏️ Awalan Nama File", value="Bukti Potong")
 
 if uploaded_files:
     st.markdown("### 🔍 Panduan Penggunaan:")
@@ -116,6 +125,9 @@ if uploaded_files:
     df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
     df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
     df["Bulan (huruf)"] = df["Masa (angka)"].map({
+    # Format tanggal pemotong ke dd/mm/yyyy
+df["TANGGAL PEMOTONGAN"] = pd.to_datetime(df["TANGGAL Pemotong"], errors="coerce").dt.strftime("%d/%m/%Y")
+df = df.drop(columns=["TANGGAL Pemotong"])
         "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
         "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
         "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
