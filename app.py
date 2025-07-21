@@ -28,6 +28,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("🧾 Rename Bukti Potong 21 (BP21)")
+st.markdown("Aplikasi ini digunakan untuk mengganti nama file PDF Bukti Potong 21 secara otomatis berdasarkan data yang diekstrak dari file.")
 st.markdown("*By: Reza Fahlevi Lubis BKP @zavibis*")
 
 def regex(text, pattern, group=1, default=""):
@@ -94,18 +95,23 @@ def generate_filename(row, selected_cols):
     return prefix + "_" + "_".join(parts) + ".pdf"
 
 st.markdown("### 🔍 Panduan Penggunaan:")
+st.markdown("Aplikasi ini memungkinkan Anda mengubah nama file PDF Bukti Potong 21 secara otomatis berdasarkan kolom yang tersedia.")
 st.markdown("""
 1. Pilih satu atau lebih file PDF.  
 2. Sistem akan otomatis mengekstrak isinya.  
 3. Anda dapat memilih kolom mana saja sebagai penamaan file.  
 4. Klik tombol Rename & Download untuk mengunduh file hasil rename.
 """)
+file_prefix = st.text_input("✏️ Costum Awalan Nama File Untuk awalan di depan  : ", value="Bukti Potong")
+st.markdown("Contoh: Jika Anda mengisi `Bukti Potong`, maka nama file akan diawali dengan `Bukti Potong xxx.pdf`.")
+
 uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"], accept_multiple_files=True)
 
 prefix = st.text_input("✏️ Awalan Nama File", value="Bukti Potong")
 
 if uploaded_files:
     st.markdown("### 🔍 Panduan Penggunaan:")
+st.markdown("Aplikasi ini memungkinkan Anda mengubah nama file PDF Bukti Potong 21 secara otomatis berdasarkan kolom yang tersedia.")
     st.markdown("""
 1. Pilih satu atau lebih file PDF.  
 2. Sistem akan otomatis mengekstrak isinya.  
