@@ -97,10 +97,12 @@ uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"
 
 if uploaded_files:
     st.markdown("### 🔍 Panduan Penggunaan:")
-    st.markdown("1. Pilih satu atau lebih file PDF.  
+    st.markdown("""
+1. Pilih satu atau lebih file PDF.  
 2. Sistem akan otomatis mengekstrak isinya.  
 3. Anda dapat memilih kolom mana saja sebagai penamaan file.  
-4. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
+4. Klik tombol Rename & Download untuk mengunduh file hasil rename.
+""")
 
     data_rows = []
     for file in uploaded_files:
