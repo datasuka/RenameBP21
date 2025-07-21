@@ -1,5 +1,5 @@
 
-# app.py - Rename BP21 - Revisi ke-202507211950-1
+# app.py - Rename BP21 - Revisi ke-202507211958-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
@@ -60,11 +60,11 @@ def extract_data_bp21(file_like):
     data["KODE OBJEK PAJAk"] = regex(text, r"B\.2\s+(\d{2}-\d{3}-\d{2})")
     data["OBJEK PAJAK"] = regex(text, r"\d{2}-\d{3}-\d{2}\s+(.+?)\n")
     data["PENGHASILAN BRUTO"] = regex(text, r"\n(\d[\d.]+)\s+\d+\s+\d+\s+\d+", 1)
-    data["DPP (%)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+(\d+)")
-    data["TARIF (%)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+\d+\s+(\d+)")
-    data["Pph Dipotong (Rp)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+\d+\s+\d+\s+(\d+)")
+    data["DPP (%)"] = regex(text, r"[\d.]+\s+(\d+)\s+\d+\s+\d+")
+    data["TARIF (%)"] = regex(text, r"[\d.]+\s+\d+\s+(\d+)\s+\d+")
+    data["Pph Dipotong (Rp)"] = regex(text, r"[\d.]+\s+\d+\s+\d+\s+(\d+)")
 
-        data["jenis dokumen"] = regex(text, r"Jenis Dokumen\s*:\s*(.+)")
+    data["jenis dokumen"] = regex(text, r"Jenis Dokumen\s*:\s*(.+)")
     data["Tanggal Dokumen"] = regex(text, r"Tanggal Dokumen\s*:\s*(.+)")
     data["Nomor Dokumen"] = regex(text, r"Nomor Dokumen\s*:\s*(.+)")
 
