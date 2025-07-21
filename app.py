@@ -1,4 +1,5 @@
-# app.py - Rename BP21 - Revisi ke-202507212147-1
+
+# app.py - Rename BP21 - Revisi ke-202507212150-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
@@ -29,6 +30,17 @@ st.markdown("""
 st.title("🧾 Rename Bukti Potong 21 (BP21)")
 st.markdown("Aplikasi ini digunakan untuk mengganti nama file PDF Bukti Potong 21 secara otomatis berdasarkan data yang diekstrak dari file.")
 st.markdown("*By: Reza Fahlevi Lubis BKP @zavibis*")
+
+# Tambahkan panduan di sini
+st.markdown("### 🔍 Panduan Penggunaan:")
+st.markdown("Aplikasi ini memungkinkan Anda mengubah nama file PDF Bukti Potong 21 secara otomatis berdasarkan data yang diekstrak dari file.")
+st.markdown("1. Pilih satu atau lebih file PDF.")
+st.markdown("2. Sistem akan otomatis mengekstrak isinya.")
+st.markdown("3. Anda dapat memilih kolom mana saja sebagai penamaan file.")
+st.markdown("4. Isikan *Custom Awalan Nama File* untuk menentukan awalan nama file, contoh: `Bukti Potong`.")
+st.markdown("5. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
+
+prefix = st.text_input("✏️ Custom Awalan Nama File Untuk awalan di depan:", value="Bukti Potong")
 
 def regex(text, pattern, group=1, default=""):
     match = re.search(pattern, text, re.IGNORECASE)
@@ -92,9 +104,6 @@ def sanitize_filename(text):
 def generate_filename(row, selected_cols, prefix):
     parts = [sanitize_filename(str(row.get(col, 'NA'))) for col in selected_cols]
     return prefix + "_" + "_".join(parts) + ".pdf"
-
-# Input awal nama file custom
-prefix = st.text_input("✏️ Custom Awalan Nama File Untuk awalan di depan:", value="Bukti Potong")
 
 uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"], accept_multiple_files=True)
 
