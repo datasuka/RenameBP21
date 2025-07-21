@@ -1,4 +1,5 @@
 
+# app.py - Rename BP21 - Revisi ke-202507212020-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
@@ -35,8 +36,7 @@ def regex(text, pattern, group=1, default=""):
     return match.group(group).strip() if match else default
 
 def extract_objek_pajak_info(text):
-    match = re.search(r"(Imbalan[^
-]*?)\s+(\d[\d\.]+)\s+(\d+)\s+(\d+)\s+(\d[\d\.]+)", text)
+    match = re.search(r"(Imbalan[^\n]*?)\s+(\d[\d\.]+)\s+(\d+)\s+(\d+)\s+(\d[\d\.]+)", text)
     if match:
         return {
             "OBJEK PAJAK": match.group(1).strip(),
@@ -94,10 +94,6 @@ def generate_filename(row, selected_cols):
     parts = [sanitize_filename(str(row.get(col, 'NA'))) for col in selected_cols]
     return prefix + "_" + "_".join(parts) + ".pdf"
 
-uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"], accept_multiple_files=True)
-
-prefix = st.text_input("✏️ Custom Awalan Nama File Untuk awalan di depan", value="Bukti Potong")
-
 st.markdown("### 🔍 Panduan Penggunaan:")
 st.markdown("Aplikasi ini memungkinkan Anda mengubah nama file PDF Bukti Potong 21 secara otomatis berdasarkan data yang diekstrak dari file.")
 st.markdown("1. Pilih satu atau lebih file PDF.")
@@ -106,26 +102,7 @@ st.markdown("3. Anda dapat memilih kolom mana saja sebagai penamaan file.")
 st.markdown("4. Isikan *Custom Awalan Nama File* untuk menentukan awalan nama file, contoh: `Bukti Potong`.")
 st.markdown("5. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
 
-if uploaded_files:
-    data_rows = []
-    for file in uploaded_files:
-        pdf_bytes = file.read()
-        data = extract_data_bp21(BytesIO(pdf_bytes))
-        data["OriginalName"] = file.name
-        data["FileBytes"] = pdf_bytes
-        data_rows.append(data)
-
-    df = pd.DataFrame(data_rows).drop(columns=["FileBytes", "OriginalName"])
-    df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
-    df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
-    df["Bulan (huruf)"] = df["Masa (angka)"].map({
-        "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
-        "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
-        "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
-    })
-    df["TANGGAL PEMOTONGAN"] = pd.to_datetime(df["TANGGAL Pemotong"], errors="coerce").dt.strftime("%d/%m/%Y")
-
-    st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:")
+st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:")
     st.dataframe(df)
 
     selected_cols = st.multiselect("### ✏️ Pilih Kolom untuk Rename", df.columns.tolist())
