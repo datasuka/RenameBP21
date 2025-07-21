@@ -125,13 +125,12 @@ if uploaded_files:
     df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
     df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
     df["Bulan (huruf)"] = df["Masa (angka)"].map({
-    # Format tanggal pemotong ke dd/mm/yyyy
-df["TANGGAL PEMOTONGAN"] = pd.to_datetime(df["TANGGAL Pemotong"], errors="coerce").dt.strftime("%d/%m/%Y")
-df = df.drop(columns=["TANGGAL Pemotong"])
         "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
         "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
         "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
     })
+    df["TANGGAL PEMOTONGAN"] = pd.to_datetime(df["TANGGAL Pemotong"], errors="coerce").dt.strftime("%d/%m/%Y")
+    df = df.drop(columns=["TANGGAL Pemotong"])
 
     st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:")
     st.dataframe(df)
