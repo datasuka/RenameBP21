@@ -105,6 +105,8 @@ def generate_filename(row, selected_cols):
 uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"], accept_multiple_files=True)
 
 if uploaded_files:
+    st.markdown("### 🔍 Panduan Penggunaan:")
+    st.markdown("1. Pilih satu atau lebih file PDF.\n2. Sistem akan otomatis mengekstrak isinya.\n3. Anda dapat memilih kolom mana saja sebagai penamaan file.\n4. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
     data_rows = []
     for file in uploaded_files:
         pdf_bytes = file.read()
@@ -114,7 +116,16 @@ if uploaded_files:
         data_rows.append(data)
 
     df = pd.DataFrame(data_rows).drop(columns=["FileBytes", "OriginalName"])
-    st.dataframe(df)
+    # Tambahkan kolom Masa (angka), Bulan(huruf), Tahun dari MASA PAJAK
+    df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
+    df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
+    df["Bulan (huruf)"] = df["Masa (angka)"].map({
+        "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
+        "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
+        "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
+    })
+    st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:")
+st.dataframe(df)
 
     selected_cols = st.multiselect("### ✏️ Pilih Kolom untuk Rename", df.columns.tolist())
 
