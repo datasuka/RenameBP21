@@ -1,5 +1,5 @@
 
-# app.py - Rename BP21 - Revisi ke-202507211940-1
+# app.py - Rename BP21 - Revisi ke-202507211950-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
@@ -38,47 +38,50 @@ st.markdown("""
 4. Klik **Rename PDF & Download** untuk mengunduh hasil.
 """)
 
-def extract_regex(text, label, after_label=True, default=""):
-    pattern = rf"{re.escape(label)}\s*:?\s*(.+)" if after_label else rf"{re.escape(label)}"
+def regex(text, pattern, group=1, default=""):
     match = re.search(pattern, text, re.IGNORECASE)
-    return match.group(1).strip() if match else default
+    return match.group(group).strip() if match else default
 
 def extract_data_bp21(file_like):
     with pdfplumber.open(file_like) as pdf:
-        full_text = "\n".join(p.extract_text() for p in pdf.pages if p.extract_text())
+        text = "\n".join(p.extract_text() for p in pdf.pages if p.extract_text())
 
     data = {}
-    data["SIFAT PEMOTONGAN"] = extract_regex(full_text, "SIFAT PEMOTONGAN")
-    data["STATUS BUKTI PEMOTONGAN"] = extract_regex(full_text, "STATUS BUKTI PEMOTONGAN")
-    data["NIK/NPWP PENERIMA PENGHASILAN"] = extract_regex(full_text, "NIK / NPWP")
-    data["Nama PENERIMA PENGHASILAN"] = extract_regex(full_text, "NAMA", default="TIDAK_DIKETAHUI")
-    data["NITKU PENERIMA PENGHASILAN"] = extract_regex(full_text, "NOMOR IDENTITAS")
+    data["NOMOR BUKTI PEMOTONGAN"] = regex(text, r"NOMOR BUKTI PEMOTONGAN\s+(\S+)")
+    data["MASA PAJAK"] = regex(text, r"NOMOR BUKTI PEMOTONGAN\s+\S+\s+(\d{2}-\d{4})")
+    data["SIFAT PEMOTONGAN"] = regex(text, r"MASA PAJAK\s+\d{2}-\d{4}\s+(FINAL|TIDAK FINAL)")
+    data["STATUS BUKTI PEMOTONGAN"] = regex(text, r"SIFAT PEMOTONGAN\s+(FINAL|TIDAK FINAL)\s+(NORMAL|PEMBETULAN)")
 
-    data["Jenis fasilitas"] = extract_regex(full_text, "Jenis Fasilitas")
-    data["KODE OBJEK PAJAk"] = extract_regex(full_text, "Kode Objek Pajak")
-    data["OBJEK PAJAK"] = extract_regex(full_text, "Nama Objek Pajak")
-    data["PENGHASILAN BRUTO"] = extract_regex(full_text, "Penghasilan Bruto")
-    data["DPP (%)"] = extract_regex(full_text, "DPP (%)")
-    data["TARIF (%)"] = extract_regex(full_text, "Tarif (%)")
-    data["Pph Dipotong (Rp)"] = extract_regex(full_text, "PPh Dipotong")
-    data["Dokumen Referensi"] = extract_regex(full_text, "Dokumen Referensi")
-    data["jenis dokumen"] = extract_regex(full_text, "Jenis Dokumen")
-    data["Tanggal Dokumen"] = extract_regex(full_text, "Tanggal")
-    data["Nomor Dokumen"] = extract_regex(full_text, "Nomor Dokumen")
+    data["NIK/NPWP PENERIMA PENGHASILAN"] = regex(text, r"A\.1 NIK/NPWP\s*:\s*(\d+)")
+    data["Nama PENERIMA PENGHASILAN"] = regex(text, r"A\.2 Nama\s*:\s*(.+)")
+    data["NITKU PENERIMA PENGHASILAN"] = regex(text, r"A\.3 NITKU\s*:\s*(\d+)")
 
-    data["NPWP/NIK Pemotong"] = extract_regex(full_text, "C.1 NPWP / NIK")
-    data["NITKU Pemotong"] = extract_regex(full_text, "C.2 NOMOR IDENTITAS")
-    data["NAMA PEMOTONG Pemotong"] = extract_regex(full_text, "C.3 NAMA PEMOTONG", default="TANPA_NAMA")
-    data["TANGGAL Pemotong"] = extract_regex(full_text, "C.4 TANGGAL")
-    data["NAMA PENANDATANGAN"] = extract_regex(full_text, "C.5 NAMA PENANDATANGAN")
+    data["Jenis fasilitas"] = regex(text, r"B\.1 Jenis Fasilitas\s*:\s*(.+)")
+    data["KODE OBJEK PAJAk"] = regex(text, r"B\.2\s+(\d{2}-\d{3}-\d{2})")
+    data["OBJEK PAJAK"] = regex(text, r"\d{2}-\d{3}-\d{2}\s+(.+?)\n")
+    data["PENGHASILAN BRUTO"] = regex(text, r"\n(\d[\d.]+)\s+\d+\s+\d+\s+\d+", 1)
+    data["DPP (%)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+(\d+)")
+    data["TARIF (%)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+\d+\s+(\d+)")
+    data["Pph Dipotong (Rp)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+\d+\s+\d+\s+(\d+)")
+
+    data["Dokumen Referensi"] = regex(text, r"Dokumen Referensi")
+    data["jenis dokumen"] = regex(text, r"Jenis Dokumen\s*:\s*(.+)")
+    data["Tanggal Dokumen"] = regex(text, r"Tanggal Dokumen\s*:\s*(.+)")
+    data["Nomor Dokumen"] = regex(text, r"Nomor Dokumen\s*:\s*(.+)")
+
+    data["NPWP/NIK Pemotong"] = regex(text, r"C\.1 NPWP/NIK\s*:\s*(\d+)")
+    data["NITKU Pemotong"] = regex(text, r"C\.2.*?\s*:\s*(\d+)")
+    data["NAMA PEMOTONG Pemotong"] = regex(text, r"C\.3 Nama Pemotong\s*:\s*(.+)")
+    data["TANGGAL Pemotong"] = regex(text, r"C\.4 Tanggal\s*:\s*(.+)")
+    data["NAMA PENANDATANGAN"] = regex(text, r"C\.5 Nama Penandatangan\s*:\s*(.+)")
+
     return data
 
 def sanitize_filename(text):
     return re.sub(r'[\\/*?:"<>|]', "_", str(text))
 
 def generate_filename(row, selected_cols):
-    parts = [sanitize_filename(str(row.get(col, ''))) for col in selected_cols]
-    parts = [p if p else "NA" for p in parts]
+    parts = [sanitize_filename(str(row.get(col, 'NA'))) for col in selected_cols]
     return "BP21_" + "_".join(parts) + ".pdf"
 
 uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"], accept_multiple_files=True)
@@ -93,7 +96,7 @@ if uploaded_files:
         data_rows.append(data)
 
     df = pd.DataFrame(data_rows).drop(columns=["FileBytes", "OriginalName"])
-    st.dataframe(df)  # preview
+    st.dataframe(df)
 
     selected_cols = st.multiselect("### ✏️ Pilih Kolom untuk Rename", df.columns.tolist())
 
