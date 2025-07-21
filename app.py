@@ -102,7 +102,7 @@ st.markdown("3. Anda dapat memilih kolom mana saja sebagai penamaan file.")
 st.markdown("4. Isikan *Custom Awalan Nama File* untuk menentukan awalan nama file, contoh: `Bukti Potong`.")
 st.markdown("5. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
 
-st.markdown("### 📄 Berikut data yang berhasil diekstrak") pada tampilan berikut ini:")
+st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:") pada tampilan berikut ini:")
     st.dataframe(df)
 
     selected_cols = st.multiselect("### ✏️ Pilih Kolom untuk Rename", df.columns.tolist())
