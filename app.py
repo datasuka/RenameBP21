@@ -1,5 +1,5 @@
 
-# app.py - Rename BP21 - Revisi ke-202507211958-1
+# app.py - Rename BP21 - Revisi ke-202507212005-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
@@ -42,6 +42,21 @@ def regex(text, pattern, group=1, default=""):
     match = re.search(pattern, text, re.IGNORECASE)
     return match.group(group).strip() if match else default
 
+# Ekstrak baris yang mengandung: OBJEK PAJAK + 4 angka terakhir (bruto, dpp, tarif, pph)
+def extract_objek_pajak_info(text):
+    match = re.search(r"(Imbalan[^\n]*?)\s+(\d[\d\.]+)\s+(\d+)\s+(\d+)\s+(\d[\d\.]+)", text)
+    if match:
+        return {
+            "OBJEK PAJAK": match.group(1).strip(),
+            "PENGHASILAN BRUTO": match.group(2).replace(".", ""),
+            "DPP (%)": match.group(3),
+            "TARIF (%)": match.group(4),
+            "Pph Dipotong (Rp)": match.group(5).replace(".", "")
+        }
+    return {
+        "OBJEK PAJAK": "", "PENGHASILAN BRUTO": "", "DPP (%)": "", "TARIF (%)": "", "Pph Dipotong (Rp)": ""
+    }
+
 def extract_data_bp21(file_like):
     with pdfplumber.open(file_like) as pdf:
         text = "\n".join(p.extract_text() for p in pdf.pages if p.extract_text())
@@ -58,11 +73,8 @@ def extract_data_bp21(file_like):
 
     data["Jenis fasilitas"] = regex(text, r"B\.1 Jenis Fasilitas\s*:\s*(.+)")
     data["KODE OBJEK PAJAk"] = regex(text, r"B\.2\s+(\d{2}-\d{3}-\d{2})")
-    data["OBJEK PAJAK"] = regex(text, r"\d{2}-\d{3}-\d{2}\s+(.+?)\n")
-    data["PENGHASILAN BRUTO"] = regex(text, r"\n(\d[\d.]+)\s+\d+\s+\d+\s+\d+", 1)
-    data["DPP (%)"] = regex(text, r"[\d.]+\s+(\d+)\s+\d+\s+\d+")
-    data["TARIF (%)"] = regex(text, r"[\d.]+\s+\d+\s+(\d+)\s+\d+")
-    data["Pph Dipotong (Rp)"] = regex(text, r"[\d.]+\s+\d+\s+\d+\s+(\d+)")
+
+    data.update(extract_objek_pajak_info(text))
 
     data["jenis dokumen"] = regex(text, r"Jenis Dokumen\s*:\s*(.+)")
     data["Tanggal Dokumen"] = regex(text, r"Tanggal Dokumen\s*:\s*(.+)")
