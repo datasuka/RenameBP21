@@ -64,8 +64,7 @@ def extract_data_bp21(file_like):
     data["TARIF (%)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+\d+\s+(\d+)")
     data["Pph Dipotong (Rp)"] = regex(text, r"PENGHASILAN\s+BRUTO.*?\n[\d.]+\s+\d+\s+\d+\s+(\d+)")
 
-    data["Dokumen Referensi"] = regex(text, r"Dokumen Referensi")
-    data["jenis dokumen"] = regex(text, r"Jenis Dokumen\s*:\s*(.+)")
+        data["jenis dokumen"] = regex(text, r"Jenis Dokumen\s*:\s*(.+)")
     data["Tanggal Dokumen"] = regex(text, r"Tanggal Dokumen\s*:\s*(.+)")
     data["Nomor Dokumen"] = regex(text, r"Nomor Dokumen\s*:\s*(.+)")
 
