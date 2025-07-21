@@ -116,14 +116,15 @@ if uploaded_files:
         data_rows.append(data)
 
     df = pd.DataFrame(data_rows).drop(columns=["FileBytes", "OriginalName"])
-    # Tambahkan kolom Masa (angka), Bulan(huruf), Tahun dari MASA PAJAK
-    df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
-    df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
-    df["Bulan (huruf)"] = df["Masa (angka)"].map({
-        "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
-        "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
-        "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
-    })
+
+df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
+df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
+df["Bulan (huruf)"] = df["Masa (angka)"].map({
+    "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
+    "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
+    "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
+})
+
     st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:")
 st.dataframe(df)
 
