@@ -1,5 +1,5 @@
 
-# app.py - Rename BP21 - Revisi ke-202507212020-1
+# app.py - Rename BP21 - Revisi ke-202507212140-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
@@ -80,7 +80,7 @@ def extract_data_bp21(file_like):
     data["Nomor Dokumen"] = regex(text, r"Nomor Dokumen\s*:\s*(.+)")
 
     data["NPWP/NIK Pemotong"] = regex(text, r"C\.1 NPWP/NIK\s*:\s*(\d+)")
-    data["NITKU Pemotong"] = regex(text, r"C\.2.*?\s*:\s*(\d+)")
+    data["NITKU Pemotong"] = regex(text, r"C\.2.*?:\s*(\d+)")
     data["NAMA PEMOTONG Pemotong"] = regex(text, r"C\.3 Nama Pemotong\s*:\s*(.+)")
     data["TANGGAL Pemotong"] = regex(text, r"C\.4 Tanggal\s*:\s*(.+)")
     data["NAMA PENANDATANGAN"] = regex(text, r"C\.5 Nama Penandatangan\s*:\s*(.+)")
@@ -90,28 +90,45 @@ def extract_data_bp21(file_like):
 def sanitize_filename(text):
     return re.sub(r'[\\/*?:"<>|]', "_", str(text))
 
-def generate_filename(row, selected_cols):
+def generate_filename(row, selected_cols, prefix):
     parts = [sanitize_filename(str(row.get(col, 'NA'))) for col in selected_cols]
     return prefix + "_" + "_".join(parts) + ".pdf"
 
-st.markdown("### 🔍 Panduan Penggunaan:")
-st.markdown("Aplikasi ini memungkinkan Anda mengubah nama file PDF Bukti Potong 21 secara otomatis berdasarkan data yang diekstrak dari file.")
-st.markdown("1. Pilih satu atau lebih file PDF.")
-st.markdown("2. Sistem akan otomatis mengekstrak isinya.")
-st.markdown("3. Anda dapat memilih kolom mana saja sebagai penamaan file.")
-st.markdown("4. Isikan *Custom Awalan Nama File* untuk menentukan awalan nama file, contoh: `Bukti Potong`.")
-st.markdown("5. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
+# Input awal nama file custom
+prefix = st.text_input("✏️ Custom Awalan Nama File Untuk awalan di depan:", value="Bukti Potong")
+
+uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"], accept_multiple_files=True)
+
+if uploaded_files:
+    data_rows = []
+    for file in uploaded_files:
+        pdf_bytes = file.read()
+        data = extract_data_bp21(BytesIO(pdf_bytes))
+        data["OriginalName"] = file.name
+        data["FileBytes"] = pdf_bytes
+        data_rows.append(data)
+
+    df = pd.DataFrame(data_rows).drop(columns=["FileBytes", "OriginalName"])
+    df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
+    df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
+    df["Bulan (huruf)"] = df["Masa (angka)"].map({
+        "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
+        "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
+        "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
+    })
+
+    df["TANGGAL PEMOTONGAN"] = pd.to_datetime(df["TANGGAL Pemotong"], errors="coerce").dt.strftime("%d/%m/%Y")
 
     st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:")
     st.dataframe(df)
-    
+
     selected_cols = st.multiselect("### ✏️ Pilih Kolom untuk Rename", df.columns.tolist())
 
     if st.button("🔁 Rename PDF & Download"):
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
             for i, row in df.iterrows():
-                filename = generate_filename(row, selected_cols)
+                filename = generate_filename(row, selected_cols, prefix)
                 zipf.writestr(filename, data_rows[i]["FileBytes"])
         zip_buffer.seek(0)
         st.success("✅ Siap diunduh!")
