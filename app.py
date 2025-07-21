@@ -62,11 +62,18 @@ def extract_data_bp21(file_like):
         text = "\n".join(p.extract_text() for p in pdf.pages if p.extract_text())
 
     data = {}
-    data["NOMOR BUKTI PEMOTONGAN"] = regex(text, r"NOMOR BUKTI PEMOTONGAN\s+(\S+)")
-    data["MASA PAJAK"] = regex(text, r"NOMOR BUKTI PEMOTONGAN\s+\S+\s+(\d{2}-\d{4})")
-    data["SIFAT PEMOTONGAN"] = regex(text, r"MASA PAJAK\s+\d{2}-\d{4}\s+(FINAL|TIDAK FINAL)")
-    data["STATUS BUKTI PEMOTONGAN"] = regex(text, r"SIFAT PEMOTONGAN\s+(FINAL|TIDAK FINAL)\s+(NORMAL|PEMBETULAN)")
-
+    match = re.search(r"(\S+)\s+(\d{2}-\d{4})\s+(FINAL|TIDAK FINAL)\s+(NORMAL|PEMBETULAN)", text)
+    if match:
+        data["NOMOR BUKTI PEMOTONGAN"] = match.group(1)
+        data["MASA PAJAK"] = match.group(2)
+        data["SIFAT PEMOTONGAN"] = match.group(3)
+        data["STATUS BUKTI PEMOTONGAN"] = match.group(4)
+    else:
+        data["NOMOR BUKTI PEMOTONGAN"] = ""
+        data["MASA PAJAK"] = ""
+        data["SIFAT PEMOTONGAN"] = ""
+        data["STATUS BUKTI PEMOTONGAN"] = ""
+            
     data["NIK/NPWP PENERIMA PENGHASILAN"] = regex(text, r"A\.1 NIK/NPWP\s*:\s*(\d+)")
     data["Nama PENERIMA PENGHASILAN"] = regex(text, r"A\.2 Nama\s*:\s*(.+)")
     data["NITKU PENERIMA PENGHASILAN"] = regex(text, r"A\.3 NITKU\s*:\s*(\d+)")
