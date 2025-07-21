@@ -1,5 +1,4 @@
-
-# app.py - Rename BP21 - Revisi ke-202507212140-1
+# app.py - Rename BP21 - Revisi ke-202507212147-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
