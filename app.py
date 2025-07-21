@@ -1,5 +1,5 @@
 
-# app.py - Rename BP21 - Revisi ke-202507212005-1
+# app.py - Rename BP21 - Revisi ke-202507212020-1
 import streamlit as st
 import pdfplumber
 import pandas as pd
@@ -30,19 +30,10 @@ st.markdown("""
 st.title("🧾 Rename Bukti Potong 21 (BP21)")
 st.markdown("*By: Reza Fahlevi Lubis BKP @zavibis*")
 
-st.markdown("""
-### 📌 Petunjuk Penggunaan
-1. Upload satu atau beberapa file PDF Bukti Potong 21.
-2. Aplikasi akan membaca informasi dari PDF.
-3. Pilih kolom untuk dijadikan format nama file.
-4. Klik **Rename PDF & Download** untuk mengunduh hasil.
-""")
-
 def regex(text, pattern, group=1, default=""):
     match = re.search(pattern, text, re.IGNORECASE)
     return match.group(group).strip() if match else default
 
-# Ekstrak baris yang mengandung: OBJEK PAJAK + 4 angka terakhir (bruto, dpp, tarif, pph)
 def extract_objek_pajak_info(text):
     match = re.search(r"(Imbalan[^\n]*?)\s+(\d[\d\.]+)\s+(\d+)\s+(\d+)\s+(\d[\d\.]+)", text)
     if match:
@@ -73,7 +64,7 @@ def extract_data_bp21(file_like):
         data["MASA PAJAK"] = ""
         data["SIFAT PEMOTONGAN"] = ""
         data["STATUS BUKTI PEMOTONGAN"] = ""
-            
+
     data["NIK/NPWP PENERIMA PENGHASILAN"] = regex(text, r"A\.1 NIK/NPWP\s*:\s*(\d+)")
     data["Nama PENERIMA PENGHASILAN"] = regex(text, r"A\.2 Nama\s*:\s*(.+)")
     data["NITKU PENERIMA PENGHASILAN"] = regex(text, r"A\.3 NITKU\s*:\s*(\d+)")
@@ -106,7 +97,11 @@ uploaded_files = st.file_uploader("📎 Upload PDF Bukti Potong 21", type=["pdf"
 
 if uploaded_files:
     st.markdown("### 🔍 Panduan Penggunaan:")
-    st.markdown("1. Pilih satu atau lebih file PDF.\n2. Sistem akan otomatis mengekstrak isinya.\n3. Anda dapat memilih kolom mana saja sebagai penamaan file.\n4. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
+    st.markdown("1. Pilih satu atau lebih file PDF.  
+2. Sistem akan otomatis mengekstrak isinya.  
+3. Anda dapat memilih kolom mana saja sebagai penamaan file.  
+4. Klik tombol Rename & Download untuk mengunduh file hasil rename.")
+
     data_rows = []
     for file in uploaded_files:
         pdf_bytes = file.read()
@@ -116,17 +111,16 @@ if uploaded_files:
         data_rows.append(data)
 
     df = pd.DataFrame(data_rows).drop(columns=["FileBytes", "OriginalName"])
-
-df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
-df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
-df["Bulan (huruf)"] = df["Masa (angka)"].map({
-    "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
-    "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
-    "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
-})
+    df["Masa (angka)"] = df["MASA PAJAK"].str.extract(r"(\d{2})")
+    df["Tahun"] = df["MASA PAJAK"].str.extract(r"\d{2}-(\d{4})")
+    df["Bulan (huruf)"] = df["Masa (angka)"].map({
+        "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
+        "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
+        "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
+    })
 
     st.markdown("### 📄 Berikut data yang berhasil diekstrak pada tampilan berikut ini:")
-st.dataframe(df)
+    st.dataframe(df)
 
     selected_cols = st.multiselect("### ✏️ Pilih Kolom untuk Rename", df.columns.tolist())
 
